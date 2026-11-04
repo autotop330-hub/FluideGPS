@@ -1,0 +1,29 @@
+name: Construire Fluide
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q -o Fluide-projet.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - run: gradle :app:assembleRelease --no-daemon --stacktrace
+        working-directory: fluide
+      - run: cp fluide/app/build/outputs/apk/release/app-release.apk Fluide.apk
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Fluide ${{ github.run_number }}
+          make_latest: true
+          files: Fluide.apk
